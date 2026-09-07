@@ -1,48 +1,382 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leitor Zen - Interface Adaptativa</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-</head>
-<body>
-    <header>
-        <div class="reading-controls">
-            <button id="decreaseFontBtn" aria-label="Diminuir fonte">A-</button>
-            <button id="increaseFontBtn" aria-label="Aumentar fonte">A+</button>
-            <button id="fontToggleBtn" aria-label="Alternar tipo de fonte"><i class="fas fa-font"></i></button>
-        </div>
-        <button id="themeToggleButton" aria-label="Alternar modo de leitura">
-            <i class="fas fa-sun"></i>
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="Leitor Zen é uma interface de leitura adaptativa com temas, controle de fonte, largura, espaçamento e modo foco."
+    />
+
+    <title>Leitor Zen | Leitura Adaptativa</title>
+
+    <link rel="stylesheet" href="style.css" />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+  </head>
+
+  <body>
+    <!-- =====================================================
+       BARRA DE PROGRESSO
+  ====================================================== -->
+
+    <div class="reading-progress" aria-hidden="true">
+      <div id="readingProgressBar" class="reading-progress-bar"></div>
+    </div>
+
+    <!-- =====================================================
+       CABEÇALHO
+  ====================================================== -->
+
+    <header class="topbar">
+      <a href="#inicio" class="brand" aria-label="Leitor Zen - início">
+        <span class="brand-icon">
+          <i class="fa-solid fa-feather-pointed"></i>
+        </span>
+
+        <span class="brand-text">
+          <strong>Leitor Zen</strong>
+          <small>Leitura adaptativa</small>
+        </span>
+      </a>
+
+      <div class="topbar-actions">
+        <button
+          id="focusModeBtn"
+          class="icon-btn"
+          type="button"
+          aria-label="Ativar modo foco"
+          aria-pressed="false"
+          title="Modo foco"
+        >
+          <i class="fa-solid fa-expand"></i>
         </button>
+
+        <button
+          id="settingsToggleBtn"
+          class="icon-btn primary"
+          type="button"
+          aria-label="Abrir configurações de leitura"
+          aria-expanded="false"
+          aria-controls="settingsPanel"
+          title="Configurações de leitura"
+        >
+          <i class="fa-solid fa-sliders"></i>
+        </button>
+      </div>
     </header>
 
-    <main class="content">
-        <h1>Bem-vindo ao Leitor Zen</h1>
-        <p>Este é um parágrafo de exemplo para mostrar como o texto e o fundo se adaptam ao modo de leitura. A experiência de navegação e leitura pode ser significativamente melhorada com a opção de alternar entre um tema claro e um tema escuro, especialmente em ambientes com pouca luz.</p>
-        <p>Experimente clicar nos botões no canto superior para ver a mágica acontecer! Perceba a suavidade da transição de cores e como os elementos visuais, incluindo o tamanho e o estilo do texto, se ajustam para proporcionar uma leitura mais confortável e personalizada.</p>
-        
-        <h2>Recursos Visuais</h2>
-        <div class="cards-container">
-            <div class="card">
-                <h3>Card de Exemplo 1</h3>
-                <p>Este é um card que demonstra como elementos mais complexos reagem à mudança de tema e fonte.</p>
-                <a href="#" class="link-example">Saiba Mais</a>
-            </div>
-            <div class="card">
-                <h3>Card de Exemplo 2</h3>
-                <p>Ajustamos as cores para garantir contraste adequado em todos os modos de leitura.</p>
-                <a href="#" class="link-example">Visitar</a>
-            </div>
+    <!-- =====================================================
+       PAINEL DE CONFIGURAÇÕES
+  ====================================================== -->
+
+    <aside
+      id="settingsPanel"
+      class="settings-panel"
+      aria-label="Configurações de leitura"
+      hidden
+    >
+      <div class="settings-header">
+        <div>
+          <p class="settings-eyebrow">Personalização</p>
+
+          <h2>Ajuste sua leitura</h2>
         </div>
+
+        <button
+          id="closeSettingsBtn"
+          class="close-settings-btn"
+          type="button"
+          aria-label="Fechar configurações"
+        >
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="settings-group">
+        <span class="settings-label"> Tema </span>
+
+        <div class="theme-options" role="group" aria-label="Escolher tema">
+          <button class="theme-btn active" type="button" data-theme="light">
+            <i class="fa-solid fa-sun"></i>
+            <span>Claro</span>
+          </button>
+
+          <button class="theme-btn" type="button" data-theme="sepia">
+            <i class="fa-solid fa-book-open"></i>
+            <span>Sépia</span>
+          </button>
+
+          <button class="theme-btn" type="button" data-theme="dark">
+            <i class="fa-solid fa-moon"></i>
+            <span>Escuro</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <span class="settings-label"> Tamanho do texto </span>
+
+        <div class="font-size-control">
+          <button
+            id="decreaseFontBtn"
+            class="adjust-btn"
+            type="button"
+            aria-label="Diminuir tamanho do texto"
+          >
+            A−
+          </button>
+
+          <span id="fontSizeValue" class="control-value" aria-live="polite">
+            100%
+          </span>
+
+          <button
+            id="increaseFontBtn"
+            class="adjust-btn"
+            type="button"
+            aria-label="Aumentar tamanho do texto"
+          >
+            A+
+          </button>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <span class="settings-label"> Tipo de fonte </span>
+
+        <div
+          class="segmented-control"
+          role="group"
+          aria-label="Escolher tipo de fonte"
+        >
+          <button class="font-family-btn active" type="button" data-font="sans">
+            Sans-serif
+          </button>
+
+          <button class="font-family-btn" type="button" data-font="serif">
+            Serif
+          </button>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <label for="lineHeightRange" class="settings-label">
+          Espaçamento entre linhas
+        </label>
+
+        <div class="range-row">
+          <i class="fa-solid fa-align-left"></i>
+
+          <input
+            id="lineHeightRange"
+            type="range"
+            min="1.4"
+            max="2.2"
+            step="0.1"
+            value="1.8"
+          />
+
+          <span id="lineHeightValue" class="range-value"> 1.8 </span>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <label for="contentWidthRange" class="settings-label">
+          Largura do texto
+        </label>
+
+        <div class="range-row">
+          <i class="fa-solid fa-left-right"></i>
+
+          <input
+            id="contentWidthRange"
+            type="range"
+            min="560"
+            max="900"
+            step="20"
+            value="720"
+          />
+
+          <span id="contentWidthValue" class="range-value"> 720px </span>
+        </div>
+      </div>
+
+      <div class="settings-footer">
+        <button id="resetPreferencesBtn" class="reset-btn" type="button">
+          <i class="fa-solid fa-rotate-left"></i>
+          Restaurar padrão
+        </button>
+      </div>
+    </aside>
+
+    <!-- =====================================================
+       CONTEÚDO PRINCIPAL
+  ====================================================== -->
+
+    <main id="inicio" class="reader-shell">
+      <article id="readerArticle" class="reader-article">
+        <header class="article-header">
+          <span class="article-category"> Tecnologia & cotidiano </span>
+
+          <h1>O valor de desacelerar em um mundo que nunca para</h1>
+
+          <p class="article-lead">
+            Nem toda produtividade nasce da velocidade. Às vezes, enxergar
+            melhor exige diminuir o ritmo, reduzir distrações e criar espaço
+            para a atenção.
+          </p>
+
+          <div class="article-meta">
+            <span>
+              <i class="fa-regular fa-clock"></i>
+              <strong id="readingTime"> 6 min de leitura </strong>
+            </span>
+
+            <span>
+              <i class="fa-regular fa-calendar"></i>
+              06 de setembro de 2026
+            </span>
+          </div>
+        </header>
+
+        <section class="article-content">
+          <p>
+            Vivemos cercados por notificações, abas abertas, mensagens, tarefas
+            e informações disputando nossa atenção. Mesmo nos momentos de
+            descanso, existe a sensação de que alguma coisa deveria estar sendo
+            feita. Esse excesso constante não torna necessariamente nosso
+            trabalho melhor. Muitas vezes, apenas torna nossa atenção mais
+            fragmentada.
+          </p>
+
+          <p>
+            Ler é uma das atividades que mais expõem esse problema. Quando a
+            interface compete com o conteúdo, a experiência deixa de ser
+            simples. O leitor precisa desviar energia para elementos que não
+            fazem parte do texto: contrastes ruins, linhas muito extensas,
+            fontes pequenas ou ambientes visuais cansativos.
+          </p>
+
+          <h2>Uma interface também pode respeitar o leitor</h2>
+
+          <p>
+            Uma boa experiência de leitura não precisa decidir tudo pelo
+            usuário. Ela pode oferecer escolhas sem transformar essas escolhas
+            em obstáculos. Um tema mais escuro pode ser melhor em ambientes com
+            pouca luz. Um fundo sépia pode diminuir a sensação de contraste
+            excessivo. Uma fonte serifada pode ser confortável para algumas
+            pessoas, enquanto outras preferem formas mais simples e modernas.
+          </p>
+
+          <blockquote>
+            A melhor interface é aquela que se adapta sem exigir que o usuário
+            pense constantemente sobre a própria interface.
+          </blockquote>
+
+          <p>
+            Tamanho de texto, largura da coluna e espaçamento entre linhas
+            parecem detalhes pequenos, mas alteram profundamente a forma como o
+            conteúdo é percebido. Linhas longas demais dificultam encontrar o
+            início da próxima linha. Espaçamento apertado cria uma parede de
+            texto. Letras pequenas aumentam o esforço visual.
+          </p>
+
+          <h2>Personalização não precisa significar complexidade</h2>
+
+          <p>
+            O desafio está em oferecer controle sem poluir a tela. Por isso, as
+            configurações podem permanecer disponíveis em um painel discreto.
+            Quando necessário, o leitor ajusta sua experiência. Quando não são
+            necessárias, elas desaparecem e devolvem o foco ao conteúdo.
+          </p>
+
+          <p>
+            Também existe valor em preservar essas escolhas. Se alguém
+            selecionou um tema escuro, aumentou a fonte ou alterou o
+            espaçamento, obrigá-lo a repetir tudo na próxima visita é uma
+            pequena fricção desnecessária. Guardar preferências localmente
+            transforma personalização em continuidade.
+          </p>
+
+          <h2>O modo foco</h2>
+
+          <p>
+            Em determinados momentos, até mesmo controles úteis podem ser
+            distrações. Um modo foco pode remover elementos secundários da tela
+            e deixar apenas aquilo que interessa: o texto.
+          </p>
+
+          <p>
+            Esse princípio vale além de leitores digitais. Sistemas bem
+            construídos entendem que contexto importa. Uma interface para
+            consulta rápida possui necessidades diferentes de uma interface
+            destinada a concentração prolongada.
+          </p>
+
+          <h2>Tecnologia a serviço da experiência</h2>
+
+          <p>
+            O Leitor Zen foi criado como uma demonstração desse conceito.
+            JavaScript controla o estado da interface, registra preferências,
+            calcula informações da leitura e reage às escolhas do usuário. CSS
+            transforma esses estados em experiências visuais distintas, mantendo
+            consistência e legibilidade.
+          </p>
+
+          <p>
+            No fim, o objetivo não é adicionar recursos apenas porque eles são
+            possíveis. É usar tecnologia para remover atrito. Quando isso
+            acontece, a interface deixa de chamar atenção para si mesma e começa
+            a cumprir melhor sua função.
+          </p>
+
+          <div class="article-end">
+            <span class="end-icon">
+              <i class="fa-solid fa-leaf"></i>
+            </span>
+
+            <p>Você chegou ao fim.</p>
+
+            <strong> Obrigado por desacelerar por alguns minutos. </strong>
+          </div>
+        </section>
+      </article>
     </main>
 
-    <footer>
-        <p>&copy; 2025 Leitor Zen. Todos os direitos reservados.</p>
+    <!-- =====================================================
+       BOTÃO VOLTAR AO TOPO
+  ====================================================== -->
+
+    <button
+      id="backToTopBtn"
+      class="back-to-top"
+      type="button"
+      aria-label="Voltar ao topo"
+      title="Voltar ao topo"
+    >
+      <i class="fa-solid fa-arrow-up"></i>
+    </button>
+
+    <!-- =====================================================
+       RODAPÉ
+  ====================================================== -->
+
+    <footer class="footer">
+      <p>
+        Leitor Zen
+        <span>•</span>
+        leitura adaptada ao seu ritmo
+      </p>
+
+      <p>Desenvolvido por Thiago Araujo</p>
     </footer>
 
     <script src="script.js"></script>
-</body>
+  </body>
 </html>
