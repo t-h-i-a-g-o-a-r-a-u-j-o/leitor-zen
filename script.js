@@ -1,106 +1,502 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // --- ELEMENTOS DA UI ---
-    const body = document.body;
-    const themeToggleButton = document.getElementById('themeToggleButton');
-    const increaseFontBtn = document.getElementById('increaseFontBtn');
-    const decreaseFontBtn = document.getElementById('decreaseFontBtn');
-    const fontToggleBtn = document.getElementById('fontToggleBtn');
+document.addEventListener("DOMContentLoaded", () => {
+  /* =========================================================
+     ELEMENTOS
+  ========================================================= */
 
-    // --- LÓGICA DE TEMAS ---
-    const themes = ['claro', 'escuro', 'sepia'];
-    let currentThemeIndex = 0;
+  const body = document.body;
 
-    function applyTheme(themeName) {
-        // Remove todas as classes de tema do body
-        themes.forEach(t => body.classList.remove(t));
-        // Adiciona a classe do tema atual (se não for o claro, que é o padrão)
-        if (themeName !== 'claro') {
-            body.classList.add(themeName);
-        }
-        updateThemeIcon(themeName);
-        localStorage.setItem('theme', themeName);
-        currentThemeIndex = themes.indexOf(themeName);
+  const article = document.getElementById("readerArticle");
+
+  const readingProgressBar = document.getElementById("readingProgressBar");
+
+  const readingTime = document.getElementById("readingTime");
+
+  const focusModeBtn = document.getElementById("focusModeBtn");
+
+  const settingsToggleBtn = document.getElementById("settingsToggleBtn");
+
+  const settingsPanel = document.getElementById("settingsPanel");
+
+  const closeSettingsBtn = document.getElementById("closeSettingsBtn");
+
+  const themeButtons = document.querySelectorAll(".theme-btn");
+
+  const decreaseFontBtn = document.getElementById("decreaseFontBtn");
+
+  const increaseFontBtn = document.getElementById("increaseFontBtn");
+
+  const fontSizeValue = document.getElementById("fontSizeValue");
+
+  const fontFamilyButtons = document.querySelectorAll(".font-family-btn");
+
+  const lineHeightRange = document.getElementById("lineHeightRange");
+
+  const lineHeightValue = document.getElementById("lineHeightValue");
+
+  const contentWidthRange = document.getElementById("contentWidthRange");
+
+  const contentWidthValue = document.getElementById("contentWidthValue");
+
+  const resetPreferencesBtn = document.getElementById("resetPreferencesBtn");
+
+  const backToTopBtn = document.getElementById("backToTopBtn");
+
+  /* =========================================================
+     CONFIGURAÇÕES
+  ========================================================= */
+
+  const STORAGE_KEY = "leitorZenPreferences";
+
+  const DEFAULT_PREFERENCES = {
+    theme: "light",
+    fontSize: 100,
+    fontFamily: "sans",
+    lineHeight: 1.8,
+    contentWidth: 720,
+  };
+
+  const MIN_FONT_SIZE = 85;
+  const MAX_FONT_SIZE = 135;
+  const FONT_STEP = 5;
+
+  let preferences = {
+    ...DEFAULT_PREFERENCES,
+  };
+
+  /* =========================================================
+     LOCAL STORAGE
+  ========================================================= */
+
+  function savePreferences() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
+  }
+
+  function loadPreferences() {
+    const savedPreferences = localStorage.getItem(STORAGE_KEY);
+
+    if (!savedPreferences) {
+      return;
     }
 
-    function updateThemeIcon(themeName) {
-        const icons = {
-            claro: 'fa-sun',
-            escuro: 'fa-moon',
-            sepia: 'fa-book-open'
-        };
-        themeToggleButton.innerHTML = `<i class="fas ${icons[themeName]}"></i>`;
+    try {
+      const parsedPreferences = JSON.parse(savedPreferences);
+
+      preferences = {
+        ...DEFAULT_PREFERENCES,
+        ...parsedPreferences,
+      };
+    } catch (error) {
+      console.error("Não foi possível carregar as preferências:", error);
+
+      preferences = {
+        ...DEFAULT_PREFERENCES,
+      };
+    }
+  }
+
+  /* =========================================================
+     TEMA
+  ========================================================= */
+
+  function applyTheme(theme, shouldSave = true) {
+    body.classList.remove("theme-light", "theme-sepia", "theme-dark");
+
+    if (theme === "sepia") {
+      body.classList.add("theme-sepia");
     }
 
-    themeToggleButton.addEventListener('click', () => {
-        currentThemeIndex = (currentThemeIndex + 1) % themes.length;
-        applyTheme(themes[currentThemeIndex]);
+    if (theme === "dark") {
+      body.classList.add("theme-dark");
+    }
+
+    preferences.theme = theme;
+
+    themeButtons.forEach((button) => {
+      const isActive = button.dataset.theme === theme;
+
+      button.classList.toggle("active", isActive);
+
+      button.setAttribute("aria-pressed", String(isActive));
     });
 
-    // --- LÓGICA DE TAMANHO DA FONTE ---
-    const fontSizes = ['font-sm', 'font-normal', 'font-lg', 'font-xl'];
-    let currentSizeIndex = 1; // 'font-normal' é o padrão
-
-    function applyFontSize(sizeClassName) {
-        fontSizes.forEach(s => body.classList.remove(s));
-        if (sizeClassName !== 'font-normal') {
-            body.classList.add(sizeClassName);
-        }
-        localStorage.setItem('font_size', sizeClassName);
-        currentSizeIndex = fontSizes.indexOf(sizeClassName);
+    if (shouldSave) {
+      savePreferences();
     }
+  }
 
-    increaseFontBtn.addEventListener('click', () => {
-        if (currentSizeIndex < fontSizes.length - 1) {
-            currentSizeIndex++;
-            applyFontSize(fontSizes[currentSizeIndex]);
-        }
+  /* =========================================================
+     TAMANHO DO TEXTO
+  ========================================================= */
+
+  function applyFontSize(size, shouldSave = true) {
+    const safeSize = Math.max(MIN_FONT_SIZE, Math.min(MAX_FONT_SIZE, size));
+
+    preferences.fontSize = safeSize;
+
+    const remValue = safeSize / 100;
+
+    document.documentElement.style.setProperty(
+      "--reader-font-size",
+      `${remValue}rem`,
+    );
+
+    fontSizeValue.textContent = `${safeSize}%`;
+
+    decreaseFontBtn.disabled = safeSize <= MIN_FONT_SIZE;
+    increaseFontBtn.disabled = safeSize >= MAX_FONT_SIZE;
+
+    if (shouldSave) {
+      savePreferences();
+    }
+  }
+
+  /* =========================================================
+     TIPO DE FONTE
+  ========================================================= */
+
+  function applyFontFamily(fontFamily, shouldSave = true) {
+    preferences.fontFamily = fontFamily;
+
+    body.classList.toggle("font-serif", fontFamily === "serif");
+
+    fontFamilyButtons.forEach((button) => {
+      const isActive = button.dataset.font === fontFamily;
+
+      button.classList.toggle("active", isActive);
+
+      button.setAttribute("aria-pressed", String(isActive));
     });
 
-    decreaseFontBtn.addEventListener('click', () => {
-        if (currentSizeIndex > 0) {
-            currentSizeIndex--;
-            applyFontSize(fontSizes[currentSizeIndex]);
-        }
-    });
+    if (shouldSave) {
+      savePreferences();
+    }
+  }
 
-    // --- LÓGICA DE TIPO DE FONTE ---
-    function applyFontFamily(isSerif) {
-        if (isSerif) {
-            body.classList.add('font-serif');
-        } else {
-            body.classList.remove('font-serif');
-        }
-        localStorage.setItem('font_family', isSerif ? 'serif' : 'sans-serif');
+  /* =========================================================
+     ESPAÇAMENTO ENTRE LINHAS
+  ========================================================= */
+
+  function applyLineHeight(value, shouldSave = true) {
+    const numericValue = Number(value);
+
+    preferences.lineHeight = numericValue;
+
+    document.documentElement.style.setProperty(
+      "--reader-line-height",
+      numericValue,
+    );
+
+    lineHeightRange.value = numericValue;
+
+    lineHeightValue.textContent = numericValue.toFixed(1);
+
+    if (shouldSave) {
+      savePreferences();
+    }
+  }
+
+  /* =========================================================
+     LARGURA DO TEXTO
+  ========================================================= */
+
+  function applyContentWidth(value, shouldSave = true) {
+    const numericValue = Number(value);
+
+    preferences.contentWidth = numericValue;
+
+    document.documentElement.style.setProperty(
+      "--reader-width",
+      `${numericValue}px`,
+    );
+
+    contentWidthRange.value = numericValue;
+
+    contentWidthValue.textContent = `${numericValue}px`;
+
+    if (shouldSave) {
+      savePreferences();
+    }
+  }
+
+  /* =========================================================
+     APLICAR TODAS AS PREFERÊNCIAS
+  ========================================================= */
+
+  function applyPreferences() {
+    applyTheme(preferences.theme, false);
+
+    applyFontSize(preferences.fontSize, false);
+
+    applyFontFamily(preferences.fontFamily, false);
+
+    applyLineHeight(preferences.lineHeight, false);
+
+    applyContentWidth(preferences.contentWidth, false);
+  }
+
+  /* =========================================================
+     PAINEL DE CONFIGURAÇÕES
+  ========================================================= */
+
+  function openSettings() {
+    settingsPanel.hidden = false;
+
+    settingsToggleBtn.setAttribute("aria-expanded", "true");
+  }
+
+  function closeSettings() {
+    settingsPanel.hidden = true;
+
+    settingsToggleBtn.setAttribute("aria-expanded", "false");
+  }
+
+  function toggleSettings() {
+    if (settingsPanel.hidden) {
+      openSettings();
+    } else {
+      closeSettings();
+    }
+  }
+
+  /* =========================================================
+     MODO FOCO
+  ========================================================= */
+
+  function toggleFocusMode() {
+    const isFocusMode = body.classList.toggle("focus-mode");
+
+    focusModeBtn.setAttribute("aria-pressed", String(isFocusMode));
+
+    focusModeBtn.setAttribute(
+      "aria-label",
+      isFocusMode ? "Desativar modo foco" : "Ativar modo foco",
+    );
+
+    focusModeBtn.title = isFocusMode ? "Sair do modo foco" : "Modo foco";
+
+    const icon = focusModeBtn.querySelector("i");
+
+    icon.className = isFocusMode
+      ? "fa-solid fa-compress"
+      : "fa-solid fa-expand";
+
+    closeSettings();
+  }
+
+  /* =========================================================
+     TEMPO ESTIMADO DE LEITURA
+  ========================================================= */
+
+  function calculateReadingTime() {
+    if (!article) {
+      return;
     }
 
-    fontToggleBtn.addEventListener('click', () => {
-        applyFontFamily(!body.classList.contains('font-serif'));
+    const text = article.innerText.trim();
+
+    const words = text.split(/\s+/).filter(Boolean);
+
+    const WORDS_PER_MINUTE = 200;
+
+    const minutes = Math.max(1, Math.ceil(words.length / WORDS_PER_MINUTE));
+
+    readingTime.textContent = `${minutes} min de leitura`;
+  }
+
+  /* =========================================================
+     PROGRESSO DE LEITURA
+  ========================================================= */
+
+  function updateReadingProgress() {
+    const documentElement = document.documentElement;
+
+    const scrollTop = window.scrollY || documentElement.scrollTop;
+
+    const scrollHeight = documentElement.scrollHeight - window.innerHeight;
+
+    const progress = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+
+    const safeProgress = Math.max(0, Math.min(100, progress));
+
+    readingProgressBar.style.width = `${safeProgress}%`;
+  }
+
+  /* =========================================================
+     BOTÃO VOLTAR AO TOPO
+  ========================================================= */
+
+  function updateBackToTopButton() {
+    const shouldShow = window.scrollY > 500;
+
+    backToTopBtn.classList.toggle("visible", shouldShow);
+  }
+
+  function backToTop() {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
     });
+  }
 
-    // --- INICIALIZAÇÃO ---
-    function loadSavedPreferences() {
-        // Carrega tema salvo ou detecta o do sistema
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme) {
-            applyTheme(savedTheme);
-        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            applyTheme('escuro');
-        } else {
-            applyTheme('claro');
-        }
+  /* =========================================================
+     RESTAURAR PADRÃO
+  ========================================================= */
 
-        // Carrega tamanho de fonte salvo
-        const savedFontSize = localStorage.getItem('font_size');
-        if (savedFontSize) {
-            applyFontSize(savedFontSize);
-        }
+  function resetPreferences() {
+    preferences = {
+      ...DEFAULT_PREFERENCES,
+    };
 
-        // Carrega tipo de fonte salvo
-        const savedFontFamily = localStorage.getItem('font_family');
-        if (savedFontFamily === 'serif') {
-            applyFontFamily(true);
-        }
+    applyPreferences();
+
+    savePreferences();
+  }
+
+  /* =========================================================
+     EVENTOS DOS TEMAS
+  ========================================================= */
+
+  themeButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      applyTheme(button.dataset.theme);
+    });
+  });
+
+  /* =========================================================
+     EVENTOS DO TAMANHO DE FONTE
+  ========================================================= */
+
+  increaseFontBtn.addEventListener("click", () => {
+    applyFontSize(preferences.fontSize + FONT_STEP);
+  });
+
+  decreaseFontBtn.addEventListener("click", () => {
+    applyFontSize(preferences.fontSize - FONT_STEP);
+  });
+
+  /* =========================================================
+     EVENTOS DE TIPO DE FONTE
+  ========================================================= */
+
+  fontFamilyButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      applyFontFamily(button.dataset.font);
+    });
+  });
+
+  /* =========================================================
+     EVENTOS DOS SLIDERS
+  ========================================================= */
+
+  lineHeightRange.addEventListener("input", () => {
+    applyLineHeight(lineHeightRange.value);
+  });
+
+  contentWidthRange.addEventListener("input", () => {
+    applyContentWidth(contentWidthRange.value);
+  });
+
+  /* =========================================================
+     CONFIGURAÇÕES
+  ========================================================= */
+
+  settingsToggleBtn.addEventListener("click", toggleSettings);
+
+  closeSettingsBtn.addEventListener("click", closeSettings);
+
+  /* =========================================================
+     MODO FOCO
+  ========================================================= */
+
+  focusModeBtn.addEventListener("click", toggleFocusMode);
+
+  /* =========================================================
+     RESTAURAR
+  ========================================================= */
+
+  resetPreferencesBtn.addEventListener("click", resetPreferences);
+
+  /* =========================================================
+     VOLTAR AO TOPO
+  ========================================================= */
+
+  backToTopBtn.addEventListener("click", backToTop);
+
+  /* =========================================================
+     SCROLL
+  ========================================================= */
+
+  window.addEventListener(
+    "scroll",
+    () => {
+      updateReadingProgress();
+      updateBackToTopButton();
+    },
+    {
+      passive: true,
+    },
+  );
+
+  /* =========================================================
+     REDIMENSIONAMENTO
+  ========================================================= */
+
+  window.addEventListener("resize", () => {
+    updateReadingProgress();
+  });
+
+  /* =========================================================
+     ESC
+  ========================================================= */
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") {
+      return;
     }
 
-    loadSavedPreferences();
+    if (!settingsPanel.hidden) {
+      closeSettings();
+      return;
+    }
+
+    if (body.classList.contains("focus-mode")) {
+      toggleFocusMode();
+    }
+  });
+
+  /* =========================================================
+     FECHAR PAINEL CLICANDO FORA
+  ========================================================= */
+
+  document.addEventListener("click", (event) => {
+    if (settingsPanel.hidden) {
+      return;
+    }
+
+    const clickedInsidePanel = settingsPanel.contains(event.target);
+
+    const clickedToggle = settingsToggleBtn.contains(event.target);
+
+    if (!clickedInsidePanel && !clickedToggle) {
+      closeSettings();
+    }
+  });
+
+  /* =========================================================
+     INICIALIZAÇÃO
+  ========================================================= */
+
+  function initialize() {
+    loadPreferences();
+
+    applyPreferences();
+
+    calculateReadingTime();
+
+    updateReadingProgress();
+
+    updateBackToTopButton();
+  }
+
+  initialize();
 });
