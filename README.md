@@ -137,10 +137,7 @@ leitor-zen/
 
 ## 🚀 Projeto online
 
-O projeto pode ser publicado através do **GitHub Pages**.
-
-> O link da versão online será adicionado aqui após a publicação.
-
+🌿 [Clique aqui para acessar o Leitor Zen](https://t-h-i-a-g-o-a-r-a-u-j-o.github.io/leitor-zen/)
 ---
 
 ## 🎯 Objetivo do projeto
